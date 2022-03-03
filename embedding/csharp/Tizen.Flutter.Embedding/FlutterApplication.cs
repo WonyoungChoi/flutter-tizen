@@ -203,5 +203,19 @@ namespace Tizen.Flutter.Embedding
             }
             return new FlutterDesktopPluginRegistrar();
         }
+
+        /// <summary>
+        /// Registers a plugin implementing the <see cref="IPlugin"/> interface.
+        /// When the plugin is registered, the <see cref="IFlutterPlugin.OnAttachedToEngine"/> method is called.
+        /// </summary>
+        public void RegisterPlugin(IFlutterPlugin plugin)
+        {
+            if (plugin != null)
+            {
+                // Currently, plugin name is not used for getting registrar.
+                var registrar = GetRegistrarForPlugin(null);
+                FlutterManagedPluginRegistrar.Instance.AddPlugin(registrar, plugin);
+            }
+        }
     }
 }

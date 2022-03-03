@@ -137,5 +137,15 @@ namespace Tizen.Flutter.Embedding
             }
             return new FlutterDesktopPluginRegistrar();
         }
+
+        public void RegisterPlugin(IFlutterPlugin plugin)
+        {
+            if (plugin != null)
+            {
+                // Currently, plugin name is not used for getting registrar.
+                var registrar = GetRegistrarForPlugin(null);
+                FlutterManagedPluginRegistrar.Instance.AddPlugin(registrar, plugin);
+            }
+        }
     }
 }

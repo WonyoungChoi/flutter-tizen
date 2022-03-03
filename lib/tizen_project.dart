@@ -10,6 +10,7 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/clean.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
+import 'package:path/path.dart';
 import 'package:xml/xml.dart';
 
 import 'tizen_plugins.dart';
@@ -37,8 +38,11 @@ class TizenProject extends FlutterProjectPlatform {
   Directory get ephemeralDirectory =>
       managedDirectory.childDirectory('ephemeral');
 
-  bool get isDotnet =>
-      editableDirectory.childFile('Runner.csproj').existsSync();
+  /// The intermediate output directory in the project that is managed by dotnet.
+  Directory get intermediateDirectory =>
+      editableDirectory.childDirectory('obj');
+
+  bool get isDotnet => projectFile.path.endsWith('.csproj');
 
   bool get isMultiApp =>
       uiAppDirectory.existsSync() && serviceAppDirectory.existsSync();
@@ -55,10 +59,16 @@ class TizenProject extends FlutterProjectPlatform {
       ? uiManifestFile
       : editableDirectory.childFile('tizen-manifest.xml');
 
+  File get projectFile => editableDirectory
+      .listSync()
+      .whereType<File>()
+      .firstWhere((File file) => file.path.endsWith('.csproj'),
+          orElse: () => isMultiApp
+              ? uiAppDirectory.childFile('project_def.prop')
+              : editableDirectory.childFile('project_def.prop'));
+
   @override
-  bool existsSync() => isMultiApp
-      ? uiManifestFile.existsSync() && serviceManifestFile.existsSync()
-      : manifestFile.existsSync();
+  bool existsSync() => editableDirectory.existsSync();
 
   String get outputTpkName {
     final TizenManifest manifest = TizenManifest.parseFromXml(manifestFile);
@@ -69,8 +79,12 @@ class TizenProject extends FlutterProjectPlatform {
     if (!existsSync() || !isDotnet) {
       return;
     }
+    updateDotnetUserProjectFile();
+  }
 
-    final File userFile = editableDirectory.childFile('Runner.csproj.user');
+  void updateDotnetUserProjectFile() {
+    final File userFile =
+        editableDirectory.childFile('${projectFile.basename}.user');
     const String initialXmlContent = '''
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">

@@ -40,13 +40,14 @@ namespace Tizen.Flutter.Embedding
                 {
                     if (_instance == null)
                     {
-                        if (Application.Current is FlutterApplication app)
+                        if (Application.Current is IEngineHolder holder)
                         {
-                            _instance = new DefaultBinaryMessenger(app.Engine.GetMessenger());
-                        }
-                        else if (Application.Current is FlutterServiceApplication service)
-                        {
-                            _instance = new DefaultBinaryMessenger(service.Engine.GetMessenger());
+                            IFlutterEngine engine = holder.Engine;
+                            if (engine.IsValid)
+                            {
+                                var handle = FlutterDesktopEngineGetMessenger(engine.Handle);
+                                _instance = new DefaultBinaryMessenger(handle);
+                            }
                         }
                     }
                     return _instance;

@@ -137,7 +137,7 @@ namespace Tizen.Flutter.Embedding
                 height = _initialHeight,
             };
 
-            _flutterView = FlutterDesktopViewCreateFromElmParent(ref viewProperties, Engine.Engine, _parent);
+            _flutterView = FlutterDesktopViewCreateFromElmParent(ref viewProperties, Engine.Handle, _parent);
             if (_flutterView.IsInvalid)
             {
                 TizenLog.Error("Could not launch a Flutter view.");

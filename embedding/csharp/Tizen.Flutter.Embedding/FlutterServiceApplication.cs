@@ -11,7 +11,7 @@ namespace Tizen.Flutter.Embedding
     /// <summary>
     /// The app base class for headless Flutter execution.
     /// </summary>
-    public class FlutterServiceApplication : ServiceApplication, IPluginRegistry
+    public class FlutterServiceApplication : ServiceApplication, IPluginRegistry, IEngineHolder
     {
         /// <summary>
         /// The optional entrypoint in the Dart project. Defaults to main() if the value is empty.
@@ -26,7 +26,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The Flutter engine instance.
         /// </summary>
-        internal FlutterEngine Engine { get; private set; } = null;
+        public IFlutterEngine Engine { get; private set; } = null;
 
         public override void Run(string[] args)
         {

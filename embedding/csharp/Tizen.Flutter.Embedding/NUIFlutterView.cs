@@ -79,7 +79,7 @@ namespace Tizen.Flutter.Embedding
             };
 
             View = FlutterDesktopViewCreateFromImageView(
-                ref viewProperties, Engine.Engine, imageViewRef.Handle, nativeImageQueueRef.Handle,
+                ref viewProperties, Engine.Handle, imageViewRef.Handle, nativeImageQueueRef.Handle,
                 Window.Instance.GetNativeId());
             if (View.IsInvalid)
             {

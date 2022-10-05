@@ -27,8 +27,10 @@ namespace Tizen.Flutter.Embedding
     /// <summary>
     /// The app base class for headed Flutter execution.
     /// </summary>
-    public class FlutterApplication : CoreUIApplication, IPluginRegistry
+    public class FlutterApplication : CoreUIApplication, IPluginRegistry, IEngineHolder
     {
+        private IFlutterEngine engine_;
+
         /// <summary>
         /// Initialize FlutterApplication.
         /// </summary>
@@ -52,7 +54,7 @@ namespace Tizen.Flutter.Embedding
         /// <summary>
         /// The Flutter engine instance.
         /// </summary>
-        internal FlutterEngine Engine { get; private set; } = null;
+        public IFlutterEngine Engine => engine_;
 
         /// <summary>
         /// The Flutter view instance handle.
@@ -117,7 +119,7 @@ namespace Tizen.Flutter.Embedding
         {
             if (IsRunning)
             {
-                return Engine.GetRegistrarForPlugin(pluginName);
+                return engine_.GetRegistrarForPlugin(pluginName);
             }
             return new FlutterDesktopPluginRegistrar();
         }
@@ -126,8 +128,8 @@ namespace Tizen.Flutter.Embedding
         {
             base.OnCreate();
 
-            Engine = new FlutterEngine(DartEntrypoint);
-            if (!Engine.IsValid)
+            engine_ = new FlutterEngine(DartEntrypoint);
+            if (!engine_.IsValid)
             {
                 throw new Exception("Could not create a Flutter engine.");
             }
@@ -150,7 +152,7 @@ namespace Tizen.Flutter.Embedding
                 renderer_type = (FlutterDesktopRendererType)RendererType,
             };
 
-            View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, Engine.Engine);
+            View = FlutterDesktopViewCreateFromNewWindow(ref windowProperties, engine_.Handle);
             if (View.IsInvalid)
             {
                 throw new Exception("Could not launch a Flutter application.");
@@ -163,7 +165,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(IsRunning);
 
-            Engine.NotifyAppIsResumed();
+            engine_.NotifyAppIsResumed();
         }
 
         protected override void OnPause()
@@ -172,7 +174,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(IsRunning);
 
-            Engine.NotifyAppIsPaused();
+            engine_.NotifyAppIsPaused();
         }
 
         protected override void OnTerminate()
@@ -183,7 +185,7 @@ namespace Tizen.Flutter.Embedding
 
             DotnetPluginRegistry.Instance.RemoveAllPlugins();
             FlutterDesktopViewDestroy(View);
-            Engine = null;
+            engine_ = null;
             View = null;
         }
 
@@ -191,7 +193,7 @@ namespace Tizen.Flutter.Embedding
         {
             Debug.Assert(IsRunning);
 
-            Engine.NotifyAppControl(e.ReceivedAppControl);
+            engine_.NotifyAppControl(e.ReceivedAppControl);
         }
 
         protected override void OnLowMemory(LowMemoryEventArgs e)
@@ -200,7 +202,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(IsRunning);
 
-            Engine.NotifyLowMemoryWarning();
+            engine_.NotifyLowMemoryWarning();
         }
 
         protected override void OnLocaleChanged(LocaleChangedEventArgs e)
@@ -209,7 +211,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(IsRunning);
 
-            Engine.NotifyLocaleChange();
+            engine_.NotifyLocaleChange();
         }
 
         protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
@@ -218,7 +220,7 @@ namespace Tizen.Flutter.Embedding
 
             Debug.Assert(IsRunning);
 
-            Engine.NotifyLocaleChange();
+            engine_.NotifyLocaleChange();
         }
     }
 }

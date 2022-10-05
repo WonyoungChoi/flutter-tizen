@@ -13,7 +13,7 @@ namespace Tizen.Flutter.Embedding
     /// <summary>
     /// The engine for Flutter execution.
     /// </summary>
-    public class FlutterEngine : IPluginRegistry
+    public class FlutterEngine : IFlutterEngine, IPluginRegistry
     {
         public FlutterEngine(string dartEntrypoint = "", List<string> dartEntrypointArgs = null)
             : this("../res/flutter_assets", "../res/icudtl.dat", "../lib/libapp.so", dartEntrypoint, dartEntrypointArgs)
@@ -41,19 +41,19 @@ namespace Tizen.Flutter.Embedding
                     dart_entrypoint_argv = entrypointArgs.Handle,
                 };
 
-                Engine = FlutterDesktopEngineCreate(ref engineProperties);
+                Handle = FlutterDesktopEngineCreate(ref engineProperties);
             }
         }
 
         /// <summary>
-        /// Whether the engine is valid or not.
-        /// </summary>
-        public bool IsValid => !Engine.IsInvalid;
-
-        /// <summary>
         /// Handle for interacting with the C API's engine reference.
         /// </summary>
-        protected internal FlutterDesktopEngine Engine { get; private set; } = new FlutterDesktopEngine();
+        public FlutterDesktopEngine Handle { get; private set; } = new FlutterDesktopEngine();
+
+        /// <summary>
+        /// Whether the engine is valid or not.
+        /// </summary>
+        public bool IsValid => !Handle.IsInvalid;
 
         /// <summary>
         /// Starts running the engine.
@@ -62,7 +62,7 @@ namespace Tizen.Flutter.Embedding
         {
             if (IsValid)
             {
-                return FlutterDesktopEngineRun(Engine);
+                return FlutterDesktopEngineRun(Handle);
             }
             return false;
         }
@@ -74,8 +74,8 @@ namespace Tizen.Flutter.Embedding
         {
             if (IsValid)
             {
-                FlutterDesktopEngineShutdown(Engine);
-                Engine = new FlutterDesktopEngine();
+                FlutterDesktopEngineShutdown(Handle);
+                Handle = new FlutterDesktopEngine();
             }
         }
 
@@ -87,7 +87,7 @@ namespace Tizen.Flutter.Embedding
         {
             if (IsValid)
             {
-                FlutterDesktopEngineNotifyAppIsResumed(Engine);
+                FlutterDesktopEngineNotifyAppIsResumed(Handle);
             }
         }
 
@@ -99,7 +99,7 @@ namespace Tizen.Flutter.Embedding
         {
             if (IsValid)
             {
-                FlutterDesktopEngineNotifyAppIsPaused(Engine);
+                FlutterDesktopEngineNotifyAppIsPaused(Handle);
             }
         }
 
@@ -111,7 +111,7 @@ namespace Tizen.Flutter.Embedding
         {
             if (IsValid)
             {
-                FlutterDesktopEngineNotifyAppControl(Engine, appControl.SafeAppControlHandle);
+                FlutterDesktopEngineNotifyAppControl(Handle, appControl.SafeAppControlHandle);
             }
         }
 
@@ -123,7 +123,7 @@ namespace Tizen.Flutter.Embedding
         {
             if (IsValid)
             {
-                FlutterDesktopEngineNotifyLowMemoryWarning(Engine);
+                FlutterDesktopEngineNotifyLowMemoryWarning(Handle);
             }
         }
 
@@ -135,7 +135,7 @@ namespace Tizen.Flutter.Embedding
         {
             if (IsValid)
             {
-                FlutterDesktopEngineNotifyLocaleChange(Engine);
+                FlutterDesktopEngineNotifyLocaleChange(Handle);
             }
         }
 
@@ -143,18 +143,9 @@ namespace Tizen.Flutter.Embedding
         {
             if (IsValid)
             {
-                return FlutterDesktopEngineGetPluginRegistrar(Engine, pluginName);
+                return FlutterDesktopEngineGetPluginRegistrar(Handle, pluginName);
             }
             return new FlutterDesktopPluginRegistrar();
-        }
-
-        public FlutterDesktopMessenger GetMessenger()
-        {
-            if (IsValid)
-            {
-                return FlutterDesktopEngineGetMessenger(Engine);
-            }
-            return new FlutterDesktopMessenger();
         }
 
         /// <summary>
